@@ -2,10 +2,8 @@ package com.uxin.commons.kafka;
 
 import java.util.Properties;
 
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,7 @@ public class MQProducer
     {
         props = new Properties();
 
-        props.put("bootstrap.servers", KafkaConfig.getHost());
+        props.put("bootstrap.servers", "101.200.196.99:9092");
         props.put("acks", "1");
         props.put("retries", 3);
         props.put("batch.size", 16384);
@@ -60,13 +58,17 @@ public class MQProducer
         }
 
         ProducerRecord<String, MQEntry> record = new ProducerRecord<String, MQEntry>(entry.getTopic(), entry);
-        producer.send(record, new Callback()
-        {
-            public void onCompletion(RecordMetadata metadata, Exception e)
-            {
-                Logger.info("MQ send topic:{}, offset:{}, entry:{} OK!", entry.getTopic(), metadata.offset(), entry, e);
-            }
-        });
+        producer.send(
+                record,
+                (metadata, e) -> Logger.info("MQ send topic:{}, offset:{}, entry:{} OK!", entry.getTopic(),
+                        metadata.offset(), entry, e));
     }
 
+    public static void main(String[] args)
+    {
+        for (;;)
+        {
+            send("trss", new MQEntry("smartlv", "ddd"));
+        }
+    }
 }
